@@ -1,10 +1,10 @@
-<center>
+<div style="text-align: center">
 
 # Easy eBay
 
 *A library for scraping items from eBay*
 
-</center>
+</div>
 
 ## To begin with
 
