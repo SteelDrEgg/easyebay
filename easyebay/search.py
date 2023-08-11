@@ -88,7 +88,7 @@ class item():
     image: str
 
 
-def result2json(html):
+def parseSearch(html):
     '''
     Parse eBay search result
     :param html: string
