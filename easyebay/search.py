@@ -3,11 +3,6 @@ import requests
 
 from bs4 import BeautifulSoup
 
-'''
-api: https://www.ebay.com/sch/i.html?_nkw={keyword}&_pgn={pageNum}&_ipg={itemPerPage}&_udhi={maxPrice}&_udlo={minPrice}&LH_ItemCondition={condition}
-'''
-
-
 class condition():
     '''
     The condition of item and its corresponding code
@@ -21,10 +16,11 @@ class condition():
     splitter: str = "%7C"
 
 
-def search(keyword: str, pageNum="", itemPerPage="", maxPrice="", minPrice="", conditions=[], reqHeaders={
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}):
+def search(keyword: str, pageNum="", itemPerPage="", maxPrice="", minPrice="", conditions=[], reqHeaders={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}):
     '''
     To compose request to eBay. This function will gather all the parameters and compose request
+    api: https://www.ebay.com/sch/i.html?_nkw={keyword}&_pgn={pageNum}&_ipg={itemPerPage}&_udhi={maxPrice}&_udlo={minPrice}&LH_ItemCondition={condition}
+
     :param keyword: string, equivalent to eBay search bar
     :param pageNum: string, the page number
     :param itemPerPage: string, how many items per page (range: 1-260)
