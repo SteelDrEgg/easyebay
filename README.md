@@ -21,7 +21,7 @@ result = easyebay.search(keyword="4090",
                          pageNum="1",
                          maxPrice="1000",
                          minPrice="500",
-                         soryBy=easyebay.sory.bestMatch,
+                         sortBy=easyebay.sory.bestMatch,
                          conditions=[easyebay.condition.used])
 
 parsed, currentMaxPage = easyebay.parseSearch(result)
