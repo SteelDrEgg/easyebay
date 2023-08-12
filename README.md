@@ -1,4 +1,4 @@
-<div style="text-align: center">
+<div align="center">
 
 # Easy eBay
 
@@ -8,10 +8,12 @@
 
 ## To begin with
 
-Here is a sample code
+#### install
+```shell
+pip install easyebay
+```
 
-##### Example 1
-
+##### Run
 ```python
 import easyebay
 
@@ -19,16 +21,15 @@ result = easyebay.search(keyword="4090",
                          pageNum="1",
                          maxPrice="1000",
                          minPrice="500",
+                         soryBy=easyebay.sory.bestMatch,
                          conditions=[easyebay.condition.used])
 
-parsed = easyebay.parseSearch(result)
+parsed, currentMaxPage = easyebay.parseSearch(result)
 
 for item in parsed:
     print(item.title, item.price, item.shipping, item.url)
 ```
-
-Here's a sample output
-
+Sample output
 ```text
 YASKAWA CDBR-4090B B... $989.99 None https://www.ebay...
 LOT OF 5 Motorola RS... $769.69 None https://www.ebay...
@@ -36,6 +37,7 @@ MELLTRONICS 222-4090... $750.00 None https://www.ebay...
 ...
 ```
 
+#### Explain
 `easyebay.search` returns the html, and easyebay.parseSearch returns `easyebay.item` object. This is the definition of
 item object
 
