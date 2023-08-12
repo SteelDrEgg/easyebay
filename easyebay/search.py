@@ -3,6 +3,7 @@ import requests
 
 from bs4 import BeautifulSoup
 
+
 class condition():
     '''
     The condition of item and its corresponding code
@@ -16,7 +17,19 @@ class condition():
     splitter: str = "%7C"
 
 
-def search(keyword: str, pageNum="", itemPerPage="", maxPrice="", minPrice="", conditions=[], reqHeaders={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}):
+class sort():
+    _prefix: str = "_sop="
+    endingSoon: str = "1"
+    newlyListed: str = "10"
+    lowestPrice: str = "15"
+    highestPrice: str = "16"
+    nearest: str = "7"
+    bestMatch: str = "12"
+
+
+def search(keyword: str, pageNum="", itemPerPage="", maxPrice="", minPrice="", conditions=[],
+           sortBy: str = sort.bestMatch, reqHeaders={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}):
     '''
     To compose request to eBay. This function will gather all the parameters and compose request
     api: https://www.ebay.com/sch/i.html?_nkw={keyword}&_pgn={pageNum}&_ipg={itemPerPage}&_udhi={maxPrice}&_udlo={minPrice}&LH_ItemCondition={condition}
@@ -45,8 +58,9 @@ def search(keyword: str, pageNum="", itemPerPage="", maxPrice="", minPrice="", c
         conditions = temp
     else:
         conditions = ""
+    sortBy = "&" + sort._prefix + sortBy
     return requests.get(
-        f"https://www.ebay.com/sch/i.html?_nkw={keyword}{pageNum}{itemPerPage}{maxPrice}{minPrice}{conditions}",
+        f"https://www.ebay.com/sch/i.html?_nkw={keyword}{pageNum}{itemPerPage}{maxPrice}{minPrice}{conditions}{sortBy}",
         headers=reqHeaders).text
 
 
@@ -88,7 +102,7 @@ def parseSearch(html):
     '''
     Parse eBay search result
     :param html: string
-    :return: dict
+    :return: (dict, int), curMaxPage is the current max page, this will change every query until current page is bigger or equal real max page - 7
     '''
     first = True
     soup = BeautifulSoup(html, "html.parser")
@@ -100,10 +114,12 @@ def parseSearch(html):
             continue
         thisItem = item()
         thisItem.title = _removeExtraSpace(item.find("div", class_="s-item__title").get_text().replace("\n", ""))
-        thisItem.condition = item.find("span", class_="SECONDARY_INFO").get_text()
+        thisItem.condition = _noneOrWithData(item.find("span", class_="SECONDARY_INFO"))
         thisItem.price = item.find("span", class_="s-item__price").get_text().replace("\n", "")
-        seller = item.find("span", class_="s-item__seller-info-text").get_text().split(" ")
-        seller[1] = int(re.sub(r'[(),]', '', seller[1]))  # Convert the sales amount from str to int
+        seller = _noneOrWithData(item.find("span", class_="s-item__seller-info-text"))
+        if seller:
+            seller = seller.split(" ")
+            seller[1] = int(re.sub(r'[(),]', '', seller[1]))  # Convert the sales amount from str to int
         thisItem.seller = seller
         thisItem.shipping = _removeExtraSpace(_noneOrWithData(item.find("span", class_="s-item__shipping")))
         thisItem.returns = _removeExtraSpace(_noneOrWithData(item.find("span", class_="s-item__free-returns")))
@@ -111,5 +127,15 @@ def parseSearch(html):
         urls = item.find("div", class_="s-item__image")
         thisItem.url = urls.find("a").get("href")
         thisItem.image = urls.find("img").get("src")
+        # thisItem.curMaxPage = matches = re.findall(r'pgn(.{10})', str(item))
+        # thisItem.curMaxPage = item.find("div", class_="srp-main srp-main--isLarge")
         data.append(thisItem)
-    return data
+
+    pages = soup.find_all("a", class_="pagination__item")
+    if pages:
+        curMaxPage = int(pages[-1].get_text())
+    else:
+        curMaxPage = re.findall(r'_pgn=(\d+)', html)
+        if curMaxPage:
+            curMaxPage = max(curMaxPage)
+    return data, curMaxPage
